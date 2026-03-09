@@ -77,6 +77,7 @@ const Home = () => {
             img={product.img}
             key={product.id}
             category={product.category}
+            setProducts={setProducts}
           />
         ))}
         {filteredProducts.length === 0 && (

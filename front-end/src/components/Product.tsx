@@ -1,6 +1,8 @@
-import { ShoppingBag } from "lucide-react";
+import { ShoppingBag, User } from "lucide-react";
 import type { ProductType } from "../types/Product";
 import formatterPrice from "../utils/formatterPrice";
+import { UserContext } from "../contexts/UserContext";
+import { useContext } from "react";
 
 const Product = ({
   id,
@@ -9,7 +11,45 @@ const Product = ({
   price,
   img,
   category,
+  setProducts,
 }: ProductType) => {
+  const { user } = useContext(UserContext);
+  const handleDeleteProduct = async (id: string) => {
+    try {
+      if (!id) {
+        console.log("ID não enviado");
+        return;
+      }
+      const response = await fetch(
+        `http://localhost:3000/delete-product/${id}`,
+        {
+          method: "DELETE",
+          credentials: "include",
+        },
+      );
+      if (!response.ok) {
+        console.log("Erro ao realizar requisição");
+        return;
+      }
+      getProduct();
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+  };
+
+  const getProduct = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/get-products");
+      const data = await response.json();
+      setProducts(data);
+      console.log(data);
+    } catch (error) {
+      console.log(error);
+      return;
+    }
+  };
+
   return (
     <div className="mt-2">
       <div className="flex gap-2">
@@ -17,8 +57,18 @@ const Product = ({
           src={`./${img}`}
           className="h-[83px] w-[100px] md:h-[166px] md:w-[200px]"
         />
-        <div className="flex flex-col">
-          <p className="text-sm font-bold uppercase md:text-lg">{name}</p>
+        <div className="flex w-full flex-col">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold uppercase md:text-lg">{name}</p>{" "}
+            {user?.admin && (
+              <div
+                className="flex cursor-pointer items-center rounded-md border-1 px-1 text-xs text-red-500 uppercase"
+                onClick={() => handleDeleteProduct(id)}
+              >
+                Deletar
+              </div>
+            )}
+          </div>
           <p className="md:text-md text-xs text-[#848484]">{description}</p>
           <div className="flex flex-1 items-center justify-end gap-2">
             <p className="text-sm text-[#F2DAAC]">{formatterPrice(price)}</p>
